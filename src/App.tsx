@@ -1,26 +1,52 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import SearchBox from "./components/search-box/search-box.component";
+import CardList from "./components/card-list/card-list.component";
+import { useState, useEffect, ChangeEvent } from "react";
+import { getData } from "./utils/getdata.utils";
 
-function App() {
+export type Monster = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+const App = () => {
+  const [monsters, setMonsters] = useState<Monster[]>([]);
+  const [searchField, setSearchField] = useState("");
+  const [filteredMonsters, setFilteredMonsters] = useState(monsters);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const users = await getData<Monster[]>(
+        "https://jsonplaceholder.typicode.com/users"
+      );
+      setMonsters(users);
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    const newFilteredMonsters = monsters.filter((monster) => {
+      return monster.name.toLowerCase().includes(searchField);
+    });
+    setFilteredMonsters(newFilteredMonsters);
+  }, [monsters, searchField]);
+
+  const onSearchChange = (event: ChangeEvent<HTMLInputElement>): void => {
+    const searchString = event.target.value.toLowerCase();
+    setSearchField(searchString);
+  };
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <h1 className="app-title"> Bossom Buddies </h1>
+      <SearchBox
+        onChangeHandler={onSearchChange}
+        placeholder="Search...."
+        className="monster-search"
+      />
+      <CardList monsters={filteredMonsters} />
     </div>
   );
-}
+};
 
 export default App;
